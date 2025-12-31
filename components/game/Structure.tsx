@@ -5,6 +5,7 @@ import { useFrame } from '@react-three/fiber';
 import { RigidBody, RapierRigidBody } from '@react-three/rapier';
 import * as THREE from 'three';
 import { useGameState } from '@/lib/game-state';
+import { audioManager } from '@/lib/audio-manager';
 
 interface BlockProps {
     position: [number, number, number];
@@ -21,13 +22,14 @@ const Block = ({ position, color }: BlockProps) => {
             const currentPos = rbRef.current.translation();
             const posVec = new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z);
 
-            // Check each blast point for impulse
+            let triggered = false;
             blastPoints.forEach((bp) => {
                 const blastSource = new THREE.Vector3(...bp.position);
                 const direction = posVec.clone().sub(blastSource);
                 const distance = direction.length();
 
                 if (distance < 6) {
+                    triggered = true;
                     const force = Math.max(0, 12 - distance);
                     direction.normalize().multiplyScalar(force);
                     rbRef.current?.applyImpulse({
@@ -37,13 +39,24 @@ const Block = ({ position, color }: BlockProps) => {
                     }, true);
                 }
             });
-            setExploded(true);
+
+            if (triggered) {
+                setExploded(true);
+            }
         }
     });
 
     useEffect(() => {
         if (phase === 'SCAN') setExploded(false);
     }, [phase]);
+
+    // Add collision sound effect
+    const onCollision = () => {
+        if (phase === 'DEMOLITION' || phase === 'BUILD') {
+            // Play a small impact sound procedurally or via manager
+            // For now, let's keep it quiet to avoid spam, or play a very low volume click
+        }
+    };
 
     return (
         <RigidBody
@@ -53,6 +66,7 @@ const Block = ({ position, color }: BlockProps) => {
             type={phase === 'SCAN' || phase === 'BLAST_PREP' ? 'fixed' : 'dynamic'}
             friction={0.6}
             restitution={0.1}
+            onCollisionEnter={onCollision}
         >
             <mesh castShadow receiveShadow>
                 <boxGeometry args={[0.92, 0.92, 0.92]} />

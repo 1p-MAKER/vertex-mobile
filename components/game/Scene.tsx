@@ -9,6 +9,7 @@ import { useGameState } from '@/lib/game-state';
 import { useTranslation } from 'react-i18next';
 import { Bomb, Play, RefreshCcw, Layout, PlusCircle } from 'lucide-react';
 import * as THREE from 'three';
+import { audioManager } from '@/lib/audio-manager';
 
 const BlastPointsRenderer = () => {
     const { blastPoints, removeBlastPoint } = useGameState();
@@ -144,7 +145,10 @@ export const GameScene = () => {
 
                     {phase === 'BLAST_PREP' && (
                         <button
-                            onClick={() => setPhase('DEMOLITION')}
+                            onClick={() => {
+                                setPhase('DEMOLITION');
+                                audioManager?.playSynthExplosion();
+                            }}
                             disabled={blastPoints.length === 0}
                             className="group flex items-center gap-3 rounded-full bg-red-600 px-10 py-5 text-lg font-black text-white transition-all hover:scale-105 active:scale-95 shadow-[0_0_40px_rgba(220,38,38,0.4)] disabled:opacity-50 disabled:grayscale"
                         >
