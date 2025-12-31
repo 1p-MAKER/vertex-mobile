@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">NexusMobile</string>
+    <string name="title_activity_main">NexusMobile</string>
+    <string name="package_name">com.example.nexusmobile</string>
+    <string name="custom_url_scheme">com.example.nexusmobile</string>
+</resources>
