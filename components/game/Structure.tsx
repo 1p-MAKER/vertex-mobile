@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState, useMemo } from 'react';
+import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { RigidBody, RapierRigidBody } from '@react-three/rapier';
 import * as THREE from 'three';
@@ -13,29 +13,37 @@ interface BlockProps {
 
 const Block = ({ position, color }: BlockProps) => {
     const rbRef = useRef<RapierRigidBody>(null);
-    const { phase } = useGameState();
+    const { phase, blastPoints } = useGameState();
     const [exploded, setExploded] = useState(false);
 
     useFrame(() => {
-        if (phase === 'DEMOLITION' && !exploded && rbRef.current) {
+        if (phase === 'DEMOLITION' && !exploded && rbRef.current && blastPoints.length > 0) {
             const currentPos = rbRef.current.translation();
-            const explosionSource = new THREE.Vector3(0, 0.5, 0); // Explosion center
             const posVec = new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z);
-            const direction = posVec.clone().sub(explosionSource);
-            const distance = direction.length();
 
-            if (distance < 10) {
-                setExploded(true);
-                const force = Math.max(0, 15 - distance);
-                direction.normalize().multiplyScalar(force);
-                rbRef.current.applyImpulse({
-                    x: direction.x + (Math.random() - 0.5),
-                    y: Math.max(2, direction.y) + Math.random() * 5,
-                    z: direction.z + (Math.random() - 0.5)
-                }, true);
-            }
+            // Check each blast point for impulse
+            blastPoints.forEach((bp) => {
+                const blastSource = new THREE.Vector3(...bp.position);
+                const direction = posVec.clone().sub(blastSource);
+                const distance = direction.length();
+
+                if (distance < 6) {
+                    const force = Math.max(0, 12 - distance);
+                    direction.normalize().multiplyScalar(force);
+                    rbRef.current?.applyImpulse({
+                        x: direction.x + (Math.random() - 0.5) * 2,
+                        y: Math.max(1, direction.y) + Math.random() * 8,
+                        z: direction.z + (Math.random() - 0.5) * 2
+                    }, true);
+                }
+            });
+            setExploded(true);
         }
     });
+
+    useEffect(() => {
+        if (phase === 'SCAN') setExploded(false);
+    }, [phase]);
 
     return (
         <RigidBody
@@ -64,11 +72,10 @@ export const Structure = () => {
     const blocks = useMemo(() => {
         const items = [];
         const width = 3;
-        const height = 10;
+        const height = 8;
         for (let x = -Math.floor(width / 2); x <= Math.floor(width / 2); x++) {
             for (let y = 0; y < height; y++) {
                 for (let z = -Math.floor(width / 2); z <= Math.floor(width / 2); z++) {
-                    // Add some randomness to colors
                     const grey = 0.4 + Math.random() * 0.3;
                     items.push({
                         position: [x, y + 0.5, z] as [number, number, number],
