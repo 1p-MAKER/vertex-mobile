@@ -5,20 +5,28 @@ import { Device } from '@capacitor/device';
 const resources = {
     en: {
         translation: {
-            "welcome_title": "Vertex Mobile",
-            "welcome_msg": "Experience the future of hybrid applications.",
-            "start_btn": "Get Started",
-            "device_lang": "Detected Language: {{lang}}",
-            "loading": "Initializing..."
+            "game_title": "Build & Blast DIY",
+            "phase_scan": "SCAN PHASE",
+            "phase_blast": "BLAST PREP",
+            "phase_demolition": "DEMOLITION",
+            "phase_build": "DIY BUILD",
+            "btn_blast": "DETONATE!",
+            "btn_next": "Next",
+            "score": "Score",
+            "loading": "Initializing Engine..."
         }
     },
     ja: {
         translation: {
-            "welcome_title": "Vertex Mobile",
-            "welcome_msg": "ハイブリッドアプリの未来を体験しよう。",
-            "start_btn": "はじめる",
-            "device_lang": "検出言語: {{lang}}",
-            "loading": "読み込み中..."
+            "game_title": "ビルド＆ブラスト DIY",
+            "phase_scan": "スキャンフェーズ",
+            "phase_blast": "爆破準備",
+            "phase_demolition": "解体中",
+            "phase_build": "建築フェーズ",
+            "btn_blast": "起爆！",
+            "btn_next": "次へ",
+            "score": "スコア",
+            "loading": "エンジン起動中..."
         }
     }
 };
