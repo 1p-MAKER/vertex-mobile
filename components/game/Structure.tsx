@@ -14,8 +14,9 @@ interface BlockProps {
 
 const Block = ({ position, color }: BlockProps) => {
     const rbRef = useRef<RapierRigidBody>(null);
-    const { phase, blastPoints } = useGameState();
+    const { phase, blastPoints, collectBlock } = useGameState();
     const [exploded, setExploded] = useState(false);
+    const [hidden, setHidden] = useState(false);
 
     useFrame(() => {
         if (phase === 'DEMOLITION' && !exploded && rbRef.current && blastPoints.length > 0) {
@@ -47,16 +48,22 @@ const Block = ({ position, color }: BlockProps) => {
     });
 
     useEffect(() => {
-        if (phase === 'SCAN') setExploded(false);
+        if (phase === 'SCAN') {
+            setExploded(false);
+            setHidden(false);
+        }
     }, [phase]);
 
-    // Add collision sound effect
-    const onCollision = () => {
-        if (phase === 'DEMOLITION' || phase === 'BUILD') {
-            // Play a small impact sound procedurally or via manager
-            // For now, let's keep it quiet to avoid spam, or play a very low volume click
+    const handleCollect = (e: any) => {
+        e.stopPropagation();
+        if (phase === 'DEMOLITION' && !hidden) {
+            setHidden(true);
+            collectBlock();
+            audioManager?.playSound('pop', 0.2, 1.2 + Math.random() * 0.6);
         }
     };
+
+    if (hidden) return null;
 
     return (
         <RigidBody
@@ -66,9 +73,8 @@ const Block = ({ position, color }: BlockProps) => {
             type={phase === 'SCAN' || phase === 'BLAST_PREP' ? 'fixed' : 'dynamic'}
             friction={0.6}
             restitution={0.1}
-            onCollisionEnter={onCollision}
         >
-            <mesh castShadow receiveShadow>
+            <mesh castShadow receiveShadow onClick={handleCollect}>
                 <boxGeometry args={[0.92, 0.92, 0.92]} />
                 <meshStandardMaterial
                     color={color}
@@ -83,6 +89,7 @@ const Block = ({ position, color }: BlockProps) => {
 };
 
 export const Structure = () => {
+    const { setTotalBlocks } = useGameState();
     const blocks = useMemo(() => {
         const items = [];
         const width = 3;
@@ -100,6 +107,10 @@ export const Structure = () => {
         }
         return items;
     }, []);
+
+    useEffect(() => {
+        setTotalBlocks(blocks.length);
+    }, [blocks.length, setTotalBlocks]);
 
     return (
         <group>

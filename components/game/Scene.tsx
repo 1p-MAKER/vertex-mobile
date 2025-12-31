@@ -7,7 +7,7 @@ import { OrbitControls, PerspectiveCamera, Environment, ContactShadows, Float, B
 import { Structure } from './Structure';
 import { useGameState } from '@/lib/game-state';
 import { useTranslation } from 'react-i18next';
-import { Bomb, Play, RefreshCcw, Layout, PlusCircle } from 'lucide-react';
+import { Bomb, Play, RefreshCcw, Layout, PlusCircle, Trash2 } from 'lucide-react';
 import * as THREE from 'three';
 import { audioManager } from '@/lib/audio-manager';
 
@@ -49,27 +49,15 @@ const InteractiveFloor = () => {
 
 const DIYItems = () => {
     const { phase } = useGameState();
-    const [items, setItems] = useState<{ pos: [number, number, number], color: string }[]>([]);
-
     if (phase !== 'BUILD') return null;
-
-    return (
-        <>
-            {items.map((item, i) => (
-                <RigidBody key={i} position={item.pos} colliders="cuboid">
-                    <Box args={[1, 1, 1]}>
-                        <meshStandardMaterial color={item.color} />
-                    </Box>
-                </RigidBody>
-            ))}
-            {/* Click to build logic can be added here or via a dedicated build ghost */}
-        </>
-    );
+    return null; // Build logic to be expanded
 }
 
 export const GameScene = () => {
-    const { phase, setPhase, resetGame, score, blastPoints } = useGameState();
+    const { phase, setPhase, resetGame, score, blastPoints, clearedBlocks, totalBlocks } = useGameState();
     const { t } = useTranslation();
+
+    const clearanceRate = totalBlocks > 0 ? (clearedBlocks / totalBlocks) * 100 : 0;
 
     return (
         <div className="relative h-full w-full bg-[#050505]">
@@ -122,11 +110,32 @@ export const GameScene = () => {
                     </div>
                 </div>
 
+                {/* Demolition Progress */}
+                {(phase === 'DEMOLITION' || phase === 'BUILD') && (
+                    <div className="absolute top-28 left-8 right-8 pointer-events-none flex flex-col items-center gap-2">
+                        <div className="flex w-full max-w-md justify-between items-end mb-1">
+                            <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Clearance Rate</span>
+                            <span className="text-xl font-black text-white italic">{Math.floor(clearanceRate)}%</span>
+                        </div>
+                        <div className="h-1.5 w-full max-w-md overflow-hidden rounded-full bg-white/5 border border-white/10">
+                            <div
+                                className="h-full bg-gradient-to-r from-red-500 to-orange-400 transition-all duration-500"
+                                style={{ width: `${clearanceRate}%` }}
+                            />
+                        </div>
+                    </div>
+                )}
+
                 {/* Instruction Overlay */}
                 <div className="flex justify-center flex-1 items-center">
                     {phase === 'BLAST_PREP' && (
                         <div className="rounded-xl bg-white/5 border border-white/10 p-4 backdrop-blur-md text-white/80 animate-bounce">
                             CLICK ON FLOOR TO PLACE DYNAMITES ({blastPoints.length})
+                        </div>
+                    )}
+                    {phase === 'DEMOLITION' && clearedBlocks === 0 && (
+                        <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-4 backdrop-blur-md text-red-500 font-bold animate-pulse text-xs tracking-widest uppercase">
+                            TAP DEBRIS TO COLLECT RAW MATERIALS
                         </div>
                     )}
                 </div>
@@ -162,30 +171,30 @@ export const GameScene = () => {
                             onClick={() => setPhase('BUILD')}
                             className="group flex items-center gap-3 rounded-full border border-white/20 bg-white/5 px-10 py-5 text-lg font-black text-white backdrop-blur-md transition-all hover:bg-white/10"
                         >
-                            <Play className="h-5 w-5" />
-                            {t('btn_next')}
+                            <Trash2 className="h-5 w-5" />
+                            FINish CLEANUP
                         </button>
                     )}
 
                     {phase === 'BUILD' && (
                         <div className="flex flex-col items-center gap-6">
-                            <div className="text-center bg-blue-600/20 border border-blue-500/50 p-6 rounded-3xl backdrop-blur-xl">
+                            <div className="text-center bg-blue-600/10 border border-blue-500/30 p-6 rounded-3xl backdrop-blur-xl">
                                 <h2 className="text-4xl font-black text-white mb-2 tracking-tighter uppercase italic">CLEARED!</h2>
-                                <p className="text-blue-200 font-bold uppercase tracking-widest text-xs">Ready for new construction</p>
+                                <p className="text-blue-200 font-bold uppercase tracking-widest text-xs opacity-60">Ready for new construction</p>
                             </div>
                             <div className="flex gap-4">
-                                <button className="flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-8 py-4 font-black text-white">
+                                <button className="flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-8 py-4 font-black text-white hover:bg-white/10 transition-colors">
                                     <PlusCircle className="h-5 w-5" />
                                     HOUSE
                                 </button>
-                                <button className="flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-8 py-4 font-black text-white">
+                                <button className="flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-8 py-4 font-black text-white hover:bg-white/10 transition-colors">
                                     <PlusCircle className="h-5 w-5" />
                                     TREE
                                 </button>
                             </div>
                             <button
                                 onClick={resetGame}
-                                className="flex items-center gap-2 rounded-full bg-white px-8 py-3 font-black text-black text-sm"
+                                className="flex items-center gap-2 rounded-full bg-white px-8 py-3 font-black text-black text-sm hover:bg-gray-200 transition-colors"
                             >
                                 <RefreshCcw className="h-4 w-4" />
                                 RESET GAME
@@ -197,7 +206,7 @@ export const GameScene = () => {
 
             {/* VFX Overlays */}
             {phase === 'DEMOLITION' && (
-                <div className="pointer-events-none absolute inset-0 animate-pulse bg-red-500/10 mix-blend-overlay" />
+                <div className="pointer-events-none absolute inset-0 animate-pulse bg-red-500/5 mix-blend-overlay" />
             )}
         </div>
     );

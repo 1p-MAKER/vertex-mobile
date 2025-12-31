@@ -23,32 +23,52 @@ class AudioManager {
     }
 
     playSound(name: string, volume: number = 1.0, pitch: number = 1.0) {
-        if (!this.context || !this.buffers.has(name)) return;
+        if (!this.context) return;
 
-        // Resume context if suspended (browser security)
         if (this.context.state === 'suspended') {
             this.context.resume();
         }
 
-        const source = this.context.createBufferSource();
-        source.buffer = this.buffers.get(name)!;
-        source.playbackRate.value = pitch;
-
-        const gainNode = this.context.createGain();
-        gainNode.gain.value = volume;
-
-        source.connect(gainNode);
-        gainNode.connect(this.context.destination);
-        source.start(0);
+        if (this.buffers.has(name)) {
+            const source = this.context.createBufferSource();
+            source.buffer = this.buffers.get(name)!;
+            source.playbackRate.value = pitch;
+            const gainNode = this.context.createGain();
+            gainNode.gain.value = volume;
+            source.connect(gainNode);
+            gainNode.connect(this.context.destination);
+            source.start(0);
+        } else if (name === 'pop') {
+            this.playSynthPop(volume, pitch);
+        }
     }
 
-    // Synthesize a generic explosion sound if files are missing
+    playSynthPop(volume: number = 0.2, pitch: number = 1.0) {
+        if (!this.context) return;
+        if (this.context.state === 'suspended') this.context.resume();
+
+        const osc = this.context.createOscillator();
+        const gain = this.context.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(400 * pitch, this.context.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(10, this.context.currentTime + 0.1);
+
+        gain.gain.setValueAtTime(volume, this.context.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.context.currentTime + 0.1);
+
+        osc.connect(gain);
+        gain.connect(this.context.destination);
+
+        osc.start();
+        osc.stop(this.context.currentTime + 0.1);
+    }
+
     playSynthExplosion() {
         if (!this.context) return;
         if (this.context.state === 'suspended') this.context.resume();
 
         const duration = 1.5;
-        const osc = this.context.createOscillator();
         const noise = this.context.createBufferSource();
         const noiseBuffer = this.context.createBuffer(1, this.context.sampleRate * duration, this.context.sampleRate);
         const output = noiseBuffer.getChannelData(0);
