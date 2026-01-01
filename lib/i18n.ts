@@ -6,9 +6,9 @@ const resources = {
     en: {
         translation: {
             "game_title": "Build & Blast DIY",
-            "phase_scan": "SCAN PHASE",
-            "phase_blast": "BLAST PREP",
-            "phase_demolition": "DEMOLITION",
+            "phase_scan": "START SCAN",
+            "phase_blast": "START BLAST PREP",
+            "phase_demolition": "CLEANING UP...",
             "phase_build": "DIY BUILD",
             "btn_blast": "DETONATE!",
             "btn_next": "Next",
@@ -19,10 +19,10 @@ const resources = {
     ja: {
         translation: {
             "game_title": "ビルド＆ブラスト DIY",
-            "phase_scan": "スキャンフェーズ",
-            "phase_blast": "爆破準備",
-            "phase_demolition": "解体中",
-            "phase_build": "建築フェーズ",
+            "phase_scan": "スキャン開始",
+            "phase_blast": "爆破の準備",
+            "phase_demolition": "瓦礫を収集中...",
+            "phase_build": "ビルドモード",
             "btn_blast": "起爆！",
             "btn_next": "次へ",
             "score": "スコア",
