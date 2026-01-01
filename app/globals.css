@@ -7,16 +7,20 @@
   --foreground: #ffffff;
 }
 
+/* Force full height on the entire chain */
 html,
-body {
-  height: 100%;
-  width: 100%;
+body,
+#__next,
+main {
+  height: 100% !important;
+  width: 100% !important;
   margin: 0;
   padding: 0;
   overflow: hidden;
   position: fixed;
-  /* Prevent bouncy scrolling on iOS */
   background: black;
+  -webkit-text-size-adjust: none;
+  /* Prevent font scaling */
 }
 
 body {
