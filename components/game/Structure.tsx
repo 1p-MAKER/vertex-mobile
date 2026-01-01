@@ -89,11 +89,14 @@ const Block = ({ position, color }: BlockProps) => {
 };
 
 export const Structure = () => {
-    const { setTotalBlocks } = useGameState();
+    const { level, setTotalBlocks, builtItems } = useGameState();
+
     const blocks = useMemo(() => {
         const items = [];
         const width = 3;
-        const height = 8;
+        // Height increases with level
+        const height = 5 + (level * 2);
+
         for (let x = -Math.floor(width / 2); x <= Math.floor(width / 2); x++) {
             for (let y = 0; y < height; y++) {
                 for (let z = -Math.floor(width / 2); z <= Math.floor(width / 2); z++) {
@@ -106,7 +109,7 @@ export const Structure = () => {
             }
         }
         return items;
-    }, []);
+    }, [level]);
 
     useEffect(() => {
         setTotalBlocks(blocks.length);
@@ -114,8 +117,38 @@ export const Structure = () => {
 
     return (
         <group>
+            {/* The Tower */}
             {blocks.map((b, i) => (
-                <Block key={i} position={b.position} color={b.color} />
+                <Block key={`${level}-${i}`} position={b.position} color={b.color} />
+            ))}
+
+            {/* Persistent Built Items */}
+            {builtItems.map((item) => (
+                <group key={item.id} position={item.position}>
+                    {item.type === 'HOUSE' ? (
+                        <group>
+                            <mesh position={[0, 0.5, 0]} castShadow>
+                                <boxGeometry args={[1, 1, 1]} />
+                                <meshStandardMaterial color="#8b4513" />
+                            </mesh>
+                            <mesh position={[0, 1.25, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
+                                <coneGeometry args={[0.8, 0.5, 4]} />
+                                <meshStandardMaterial color="#a52a2a" />
+                            </mesh>
+                        </group>
+                    ) : (
+                        <group>
+                            <mesh position={[0, 0.4, 0]} castShadow>
+                                <cylinderGeometry args={[0.1, 0.1, 0.8]} />
+                                <meshStandardMaterial color="#5d4037" />
+                            </mesh>
+                            <mesh position={[0, 1, 0]} castShadow>
+                                <sphereGeometry args={[0.4]} />
+                                <meshStandardMaterial color="#2e7d32" />
+                            </mesh>
+                        </group>
+                    )}
+                </group>
             ))}
         </group>
     );
