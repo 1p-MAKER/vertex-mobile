@@ -16,12 +16,21 @@ const BlastPointsRenderer = () => {
     return (
         <group>
             {blastPoints.map((bp) => (
-                <Float key={bp.id} speed={5} rotationIntensity={2} floatIntensity={0.5}>
-                    <mesh position={bp.position} onClick={(e) => { e.stopPropagation(); removeBlastPoint(bp.id); }}>
-                        <cylinderGeometry args={[0.08, 0.08, 0.3, 8]} />
-                        <meshStandardMaterial color="#ff0000" emissive="#ff0000" emissiveIntensity={2} />
+                <group key={bp.id} position={bp.position}>
+                    <mesh onClick={(e) => { e.stopPropagation(); removeBlastPoint(bp.id); }}>
+                        <cylinderGeometry args={[0.1, 0.1, 0.4, 8]} />
+                        <meshStandardMaterial color="#ff0000" emissive="#ff0000" emissiveIntensity={3} />
                     </mesh>
-                </Float>
+                    {/* Static cross marker on top */}
+                    <mesh position={[0, 0.3, 0]} rotation={[0, 0, 0]}>
+                        <boxGeometry args={[0.15, 0.02, 0.02]} />
+                        <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={1} />
+                    </mesh>
+                    <mesh position={[0, 0.3, 0]} rotation={[0, Math.PI / 2, 0]}>
+                        <boxGeometry args={[0.15, 0.02, 0.02]} />
+                        <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={1} />
+                    </mesh>
+                </group>
             ))}
         </group>
     );
